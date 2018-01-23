@@ -1,0 +1,664 @@
+MariaDB [(none)]> use csd2204w18;
+ERROR 1049 (42000): Unknown database 'csd2204w18'
+MariaDB [(none)]> use csd2204w2018;
+ERROR 1049 (42000): Unknown database 'csd2204w2018'
+MariaDB [(none)]> create database proo;
+Query OK, 1 row affected (0.00 sec)
+
+MariaDB [(none)]> use proo;
+Database changed
+MariaDB [proo]> delimeter $$
+    -> ;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'delimeter $$' at line 1
+MariaDB [proo]> create procedure proc_variables()
+    -> begin
+    -> declare a int default;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '' at line 3
+MariaDB [proo]> delimeter $$ create procedure proc_variables()
+    -> begin
+    -> declare a int default 10;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'delimeter $$ create procedure proc_variables()
+begin
+declare a int default 10' at line 1
+MariaDB [proo]> delimeter $$ create procedure proc_variables()
+    -> begin
+    -> declare a int default 10;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'delimeter $$ create procedure proc_variables()
+begin
+declare a int default 10' at line 1
+MariaDB [proo]> delimeter $$
+    -> delimiter ;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'delimeter $$
+delimiter' at line 1
+MariaDB [proo]> delimiter $$
+MariaDB [proo]> create procedure proc_variables()
+    -> begin 
+    -> declare a int default 10;
+    -> declare b,c int;
+    -> set a=a+100;
+    -> set b=2;
+    -> set c=a+b;
+    -> begin
+    -> declare c int;
+    -> set c=5;
+    -> select a,b,c;
+    -> end;
+    -> select a,b,c;
+    -> end$$
+Query OK, 0 rows affected (0.13 sec)
+
+MariaDB [proo]> call proc_variables();
+    -> $$
++------+------+------+
+| a    | b    | c    |
++------+------+------+
+|  110 |    2 |    5 |
++------+------+------+
+1 row in set (0.00 sec)
+
++------+------+------+
+| a    | b    | c    |
++------+------+------+
+|  110 |    2 |  112 |
++------+------+------+
+1 row in set (0.01 sec)
+
+Query OK, 0 rows affected (0.01 sec)
+
+MariaDB [proo]> create procedure proc_user_variables()
+    -> begin
+    -> set @x=15;
+    -> set @y=10;
+    -> select @x,@y,@x.@y;
+    -> end$$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '@y;
+end' at line 5
+MariaDB [proo]> create procedure proc_user_variables()
+    -> begin
+    -> set @x=15;
+    -> set @y=10;
+    -> select @x,@y,@x.-@y;
+    -> end$$
+Query OK, 0 rows affected (0.28 sec)
+
+MariaDB [proo]> call proc_user_variables();
+    -> $$
++------+------+--------+
+| @x   | @y   | @x.-@y |
++------+------+--------+
+|   15 |   10 |   NULL |
++------+------+--------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.02 sec)
+
+MariaDB [proo]> create procedure proc_user_variables()
+    -> begin
+    -> set @x=15;
+    -> set @y=10;
+    -> select @x,@y,@x-@y;
+    -> end$$
+ERROR 1304 (42000): PROCEDURE proc_user_variables already exists
+MariaDB [proo]> create procedure proc_user_variables1()
+    -> $$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '' at line 1
+MariaDB [proo]> select @x;
+    -> $$
++------+
+| @x   |
++------+
+|   15 |
++------+
+1 row in set (0.00 sec)
+
+MariaDB [proo]> create procedure proc_in(in var1 int)
+    -> begin
+    -> select * from jobs limit var1;
+    -> end$$
+Query OK, 0 rows affected (0.11 sec)
+
+MariaDB [proo]> call proc_in(2)$$
+ERROR 1146 (42S02): Table 'proo.jobs' doesn't exist
+MariaDB [proo]> show tables;
+    -> $$
+Empty set (0.00 sec)
+
+MariaDB [proo]> create table jobs(
+    -> id int(20),
+    -> name varchar(20)$4
+    -> $$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '' at line 3
+MariaDB [proo]> create table jobs(
+    -> id int(20),
+    -> name varchar(20)$4
+    -> $$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '' at line 3
+MariaDB [proo]> create table jobs(
+    -> id int(20),
+    -> name varchar(20)$$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '' at line 3
+MariaDB [proo]> CREATE TABLE IF NOT EXISTS `jobs` (
+    ->   `JOB_ID` varchar(10) NOT NULL DEFAULT '',
+    ->   `JOB_TITLE` varchar(35) NOT NULL,
+    ->   `MIN_SALARY` decimal(6,0) DEFAULT NULL,
+    ->   `MAX_SALARY` decimal(6,0) DEFAULT NULL,
+    ->   PRIMARY KEY (`JOB_ID`)
+    -> ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+    -> $$
+Query OK, 0 rows affected (0.42 sec)
+
+MariaDB [proo]> INSERT INTO `jobs` (`JOB_ID`, `JOB_TITLE`, `MIN_SALARY`, `MAX_SALARY`) VALUES
+    -> ('AD_PRES', 'President', '20000', '40000'),
+    -> ('AD_VP', 'Administration Vice President', '15000', '30000'),
+    -> ('AD_ASST', 'Administration Assistant', '3000', '6000'),
+    -> ('FI_MGR', 'Finance Manager', '8200', '16000'),
+    -> ('FI_ACCOUNT', 'Accountant', '4200', '9000'),
+    -> ('AC_MGR', 'Accounting Manager', '8200', '16000'),
+    -> ('AC_ACCOUNT', 'Public Accountant', '4200', '9000'),
+    -> ('SA_MAN', 'Sales Manager', '10000', '20000'),
+    -> ('SA_REP', 'Sales Representative', '6000', '12000'),
+    -> ('PU_MAN', 'Purchasing Manager', '8000', '15000'),
+    -> ('PU_CLERK', 'Purchasing Clerk', '2500', '5500'),
+    -> ('ST_MAN', 'Stock Manager', '5500', '8500'),
+    -> ('ST_CLERK', 'Stock Clerk', '2000', '5000'),
+    -> ('SH_CLERK', 'Shipping Clerk', '2500', '5500'),
+    -> ('IT_PROG', 'Programmer', '4000', '10000'),
+    -> ('MK_MAN', 'Marketing Manager', '9000', '15000'),
+    -> ('MK_REP', 'Marketing Representative', '4000', '9000'),
+    -> ('HR_REP', 'Human Resources Representative', '4000', '9000'),
+    -> ('PR_REP', 'Public Relations Representative', '4500', '10500');$$
+Query OK, 19 rows affected (0.00 sec)
+Records: 19  Duplicates: 0  Warnings: 0
+
+MariaDB [proo]> create procedure my_proc_out(out highest_salary int)
+    -> begin
+    -> select max(max_salary) into highest_salary from jobs;
+    -> end$$
+Query OK, 0 rows affected (0.41 sec)
+
+MariaDB [proo]> call my_proc_out(@m)$$select @m$$
+Query OK, 1 row affected (0.00 sec)
+
++-------+
+| @m    |
++-------+
+| 40000 |
++-------+
+1 row in set (0.00 sec)
+
+MariaDB [proo]> create pro proc_in(in 1000)
+    -> begin
+    -> select * from jobs limit min-sal>1000;
+    -> end$$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'pro proc_in(in 1000)
+begin
+select * from jobs limit min-sal>1000;
+end' at line 1
+MariaDB [proo]> create pro job_search(in salary int)
+    -> begin
+    -> select * from jobs min_salary>salary;
+    -> end$$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'pro job_search(in salary int)
+begin
+select * from jobs min_salary>salary;
+end' at line 1
+MariaDB [proo]> call job_search(1000)$$
+ERROR 1305 (42000): PROCEDURE proo.job_search does not exist
+MariaDB [proo]> create procedure job_search(in salary int)
+    -> begin
+    -> select * from jobs where min_salary>salary;
+    -> end$$
+Query OK, 0 rows affected (0.07 sec)
+
+MariaDB [proo]> call job_search(1000)$$
++------------+---------------------------------+------------+------------+
+| JOB_ID     | JOB_TITLE                       | MIN_SALARY | MAX_SALARY |
++------------+---------------------------------+------------+------------+
+| AD_PRES    | President                       |      20000 |      40000 |
+| AD_VP      | Administration Vice President   |      15000 |      30000 |
+| AD_ASST    | Administration Assistant        |       3000 |       6000 |
+| FI_MGR     | Finance Manager                 |       8200 |      16000 |
+| FI_ACCOUNT | Accountant                      |       4200 |       9000 |
+| AC_MGR     | Accounting Manager              |       8200 |      16000 |
+| AC_ACCOUNT | Public Accountant               |       4200 |       9000 |
+| SA_MAN     | Sales Manager                   |      10000 |      20000 |
+| SA_REP     | Sales Representative            |       6000 |      12000 |
+| PU_MAN     | Purchasing Manager              |       8000 |      15000 |
+| PU_CLERK   | Purchasing Clerk                |       2500 |       5500 |
+| ST_MAN     | Stock Manager                   |       5500 |       8500 |
+| ST_CLERK   | Stock Clerk                     |       2000 |       5000 |
+| SH_CLERK   | Shipping Clerk                  |       2500 |       5500 |
+| IT_PROG    | Programmer                      |       4000 |      10000 |
+| MK_MAN     | Marketing Manager               |       9000 |      15000 |
+| MK_REP     | Marketing Representative        |       4000 |       9000 |
+| HR_REP     | Human Resources Representative  |       4000 |       9000 |
+| PR_REP     | Public Relations Representative |       4500 |      10500 |
++------------+---------------------------------+------------+------------+
+19 rows in set (0.00 sec)
+
+Query OK, 0 rows affected (0.26 sec)
+
+MariaDB [proo]> create procedure job_search1(in salary int,out cntemp int)
+    -> begin
+    -> select count(*) into cntemp from jobs where max_salary>salary;
+    -> end$$
+Query OK, 0 rows affected (0.08 sec)
+
+MariaDB [proo]> select @e;
+    -> $$
++------+
+| @e   |
++------+
+| NULL |
++------+
+1 row in set (0.00 sec)
+
+MariaDB [proo]> call job_search1(5000,@e)$$
+Query OK, 1 row affected (0.00 sec)
+
+MariaDB [proo]> select @e;
+    -> $$
++------+
+| @e   |
++------+
+|   18 |
++------+
+1 row in set (0.00 sec)
+
+MariaDB [proo]> create procedure proc_inout(inout maxsalary int,in desig char(30))
+    -> begin
+    -> select max_salary into maxsalary from jobs where job_title=desig;
+    -> end$$
+Query OK, 0 rows affected (0.48 sec)
+
+MariaDB [proo]> call proc_inout(@c,'stock clerk')$$
+Query OK, 1 row affected (0.00 sec)
+
+MariaDB [proo]> select @c$$
++------+
+| @c   |
++------+
+| 5000 |
++------+
+1 row in set (0.00 sec)
+
+MariaDB [proo]> create procedure proc_compare_salary(in desig char(30))
+    -> begin
+    -> declare progsal int;
+    -> declare presssal int;
+    -> select min_salary into progsal from jobs where job_title=desig;
+    -> select min_salary into presssal from jobs where job_title='president';
+    -> set presssal=presssal/2;
+    -> select presssal;
+    -> if(progsal<presssal)
+    -> then
+    -> select 'you need increment.';
+    -> elseif
+    -> select 'you are earning good';
+    -> endif
+    -> end$$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'select 'you are earning good';
+endif
+end' at line 13
+MariaDB [proo]> create procedure proc_compare_salary(in desig char(30))
+    -> begin
+    -> declare progsal int;
+    -> declare presssal int;
+    -> select min_salary into progsal from jobs where job_title=desig;
+    -> select min_salary into presssal from jobs where job_title='president';
+    -> set presssal=presssal/2;
+    -> select presssal;
+    -> if(progsal<presssal)
+    -> then
+    -> select 'you need increment.';
+    -> elseif (progsal=presssal)
+    -> then
+    -> select 'salary is moderate';
+    -> else
+    -> select 'you are earning good';
+    -> end if
+    -> end$$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'end' at line 18
+MariaDB [proo]> create procedure proc_compare_salary(in desig char(30))
+    -> begin
+    -> declare progsal int;
+    -> declare presssal int;
+    -> select min_salary into progsal from jobs where job_title=desig;
+    -> select min_salary into presssal from jobs where job_title='president';
+    -> set presssal=presssal/2;
+    -> select presssal;
+    -> if(progsal<presssal)
+    -> then
+    -> select 'you need increment.';
+    -> elseif (progsal=presssal)
+    -> then
+    -> select 'salary is moderate';
+    -> else
+    -> select 'you are earning good';
+    -> end if
+    -> end$$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'end' at line 18
+MariaDB [proo]> create procedure proc_compare_salary(in desig char(30))
+    -> begin
+    -> declare progsal int;
+    -> declare presssal int;
+    -> select min_salary into progsal from jobs where job_title=desig;
+    -> select min_salary into presssal from jobs where job_title='president';
+    -> set presssal=presssal/2;
+    -> select presssal;
+    -> if(progsal<presssal)
+    -> then
+    -> select 'you need increment.';
+    -> elseif (progsal=presssal)
+    -> then
+    -> select 'salary is moderate';
+    -> else
+    -> select 'you are earning good';
+    -> end if
+    -> ;
+    -> end$$
+Query OK, 0 rows affected (0.13 sec)
+
+MariaDB [proo]> call proc_compare_salary('programmer')$$
++----------+
+| presssal |
++----------+
+|    10000 |
++----------+
+1 row in set (0.00 sec)
+
++---------------------+
+| you need increment. |
++---------------------+
+| you need increment. |
++---------------------+
+1 row in set (0.01 sec)
+
+Query OK, 0 rows affected (0.01 sec)
+
+MariaDB [proo]> create procedure proc_case (inout no_employees int,in salary int)
+    -> begin
+    -> case 
+    -> when(salary>10000)
+    -> then(select count(job_id)into no_employees fromwhere min_salary>10000);
+    -> jobs
+    -> when(salary<10000)
+    -> then(select count(job_id) into no_employees from where;
+    -> $$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'fromwhere min_salary>10000);
+jobs
+when(salary<10000)
+then(select count(job_id) i' at line 5
+MariaDB [proo]> create procedure proc_case (inout no_employees int,in salary int)
+    -> begin
+    -> case 
+    -> when(salary>10000)
+    -> then(select count(job_id)into no_employees from jobs where min_salary>10000);
+    -> when(salary>10000)
+    -> then (select count(job_id) into no_employees from jobs where min_salary<10000);else(select count(job_id)into no_employees from jobs where min_salary=10000);
+    -> end case;
+    -> end$$
+Query OK, 0 rows affected (0.07 sec)
+
+MariaDB [proo]> call proc_case(@c,10001);
+    -> $$
+Query OK, 1 row affected (0.00 sec)
+
+MariaDB [proo]> select @c;
+    -> $$
++------+
+| @c   |
++------+
+|    2 |
++------+
+1 row in set (0.00 sec)
+
+MariaDB [proo]> call proc_case(@c,9999);
+    -> $$
+Query OK, 1 row affected (0.00 sec)
+
+MariaDB [proo]> select @c;
+    -> $$
++------+
+| @c   |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+
+MariaDB [proo]> create table numbers(
+    -> n1 float(5,2));
+    -> $$
+Query OK, 0 rows affected (0.28 sec)
+
+MariaDB [proo]> desc numbers;
+    -> $$
++-------+------------+------+-----+---------+-------+
+| Field | Type       | Null | Key | Default | Extra |
++-------+------------+------+-----+---------+-------+
+| n1    | float(5,2) | YES  |     | NULL    |       |
++-------+------------+------+-----+---------+-------+
+1 row in set (0.00 sec)
+
+MariaDB [proo]> select * from numbers;
+    -> $$
+Empty set (0.00 sec)
+
+MariaDB [proo]> create procedure proc_loop(in num int)
+    -> begin
+    -> declare x int;
+    -> set x=0;
+    -> loop_label:loop
+    -> insert intonumbers values[rand()];
+    -> set x=x+1;
+    -> if x>=num
+    -> then leave loop_label;
+    -> end if;
+    -> end loop;
+    -> end$$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '[rand()];
+set x=x+1;
+if x>=num
+then leave loop_label;
+end if;
+end loop;
+end' at line 6
+MariaDB [proo]> create procedure proc_loop(in num int)
+    -> begin
+    -> declare x int;
+    -> set x=0;
+    -> loop_label:loop
+    -> insert intonumbers values(rand());
+    -> set x=x+1;
+    -> if x>=num
+    -> then leave loop_label;
+    -> end if;
+    -> end loop;
+    -> end$$
+Query OK, 0 rows affected (0.10 sec)
+
+MariaDB [proo]> call proc_loop(3)$$
+ERROR 1146 (42S02): Table 'proo.intonumbers' doesn't exist
+MariaDB [proo]> create procedure proc_loop(in num int)
+    -> begin
+    -> declare x int;
+    -> set x=0;
+    -> loop_label:loop
+    -> insert intonumbers values(rand());
+    -> set x=x+1;
+    -> if x>=num
+    -> then leave loop_label;
+    -> end if;
+    -> end loop;
+    -> end$$
+ERROR 1304 (42000): PROCEDURE proc_loop already exists
+MariaDB [proo]> CREATEPROCEDUREproc_REPEAT(INnINT) BEGIN SET@sum=0; SET@x=1; REPEAT IFmod(@x,2) =0 THEN SET@sum=@sum+@x; END IF; SET@x=@x+1; UNTIL@x>n END REPEAT; END $$ 
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'CREATEPROCEDUREproc_REPEAT(INnINT) BEGIN SET@sum=0; SET@x=1; REPEAT IFmod(@x,2) ' at line 1
+MariaDB [proo]> create procedure proc_repeat(in n int)
+    -> begin
+    -> set @sum=0;
+    -> set @x=1;
+    -> repeat
+    -> if mod (@x,2)=0
+    -> then set @sum=@sum+@x;
+    -> end if
+    -> ;
+    -> set @x=@x+1;
+    -> until @x=@x+1;
+    -> $$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '' at line 11
+MariaDB [proo]> create procedure proc_repeat(in n int)
+    -> begin
+    -> set @sum=0;
+    -> set @x=1;
+    -> repeat
+    -> if mod (@x,2)=0
+    -> then set @sum=@sum+@x;
+    -> end if
+    -> ;
+    -> set @x=@x+1;
+    -> until @x>n;
+    -> end repeat;
+    -> end$$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near ';
+end repeat;
+end' at line 11
+MariaDB [proo]> create procedure proc_repeat(in n int)
+    -> begin
+    -> set @sum=0;
+    -> set @x=1;
+    -> repeat
+    -> if mod (@x,2)=0
+    -> then set @sum=@sum+@x;
+    -> end if
+    -> ;
+    -> set @x=@x+1;
+    -> until @x>n
+    -> end repeat;
+    -> end$$
+Query OK, 0 rows affected (0.13 sec)
+
+MariaDB [proo]> call proc_repeat(5)$$
+Query OK, 0 rows affected (0.00 sec)
+
+MariaDB [proo]> select @sum$$
++------+
+| @sum |
++------+
+|    6 |
++------+
+1 row in set (0.00 sec)
+
+MariaDB [proo]> create procedure proc_while(in nint)
+    -> begin
+    -> set @sum=0;
+    -> set @x=1;
+    -> while @x<n
+    -> do
+    -> if mod(@x,2)<>0
+    -> then set @sum=@sum+@x;
+    -> end if;
+    -> set @x=@x+1;
+    -> end while;
+    -> end$$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near ')
+begin
+set @sum=0;
+set @x=1;
+while @x<n
+do
+if mod(@x,2)<>0
+then set @sum=@sum+@' at line 1
+MariaDB [proo]> CREATEPROCEDUREproc_WHILE(INnINT) BEGIN SET@sum=0; SET@x=1; WHILE@x<n DO IF mod(@x, 2) <> 0 THEN SET @sum = @sum + @x; END IF; SET @x = @x + 1; END WHILE; END$$ 
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'CREATEPROCEDUREproc_WHILE(INnINT) BEGIN SET@sum=0; SET@x=1; WHILE@x<n DO IF mod(' at line 1
+MariaDB [proo]> CREATEPROCEDUREproc_cursors(INOUTreturn_valINT) BEGIN DECLAREa,bINT; DECLAREcur_1CURSORFORSELECTmax_salaryFROMjobs; DECLARECONTINUEHANDLERFORNOTFOUNDSETb=1; OPENcur_1; REPEAT FETCHcur_1INTOa; UNTILb=1 ENDREPEAT; CLOSEcur_1; SETreturn_val=a; END$$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'CREATEPROCEDUREproc_cursors(INOUTreturn_valINT) BEGIN DECLAREa,bINT; DECLAREcur_' at line 1
+MariaDB [proo]> create procedure proc_cursors(inout return_val int)
+    -> begin
+    -> declare a,b,int;
+    -> declare cur_1 cursor for select max_salary from jobs;
+    -> declare continue handler for not found set b=1;
+    -> open cur_1;
+    -> repeat
+    -> fetch cur_1 into a;
+    -> until b=1
+    -> end repeat;
+    -> close cur_1;
+    -> set return_val=a;
+    -> end$$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'int;
+declare cur_1 cursor for select max_salary from jobs;
+declare continue hand' at line 3
+MariaDB [proo]> create procedure proc_cursors(inout return_val int)
+    -> begin
+    -> declare a,b int;
+    -> declare cur_1 cursor for select max_salary from jobs;
+    -> declare continue handler for not found set b=1;
+    -> open cur_1;
+    -> repeat
+    -> fetch cur_1 into a;
+    -> until b=1;
+    -> end repeat;
+    -> close cur_1;
+    -> set return_val=a;
+    -> end$$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near ';
+end repeat;
+close cur_1;
+set return_val=a;
+end' at line 9
+MariaDB [proo]> CREATEORREPLACEPROCEDUREtestError() BEGIN DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SELECT 'Error occured'; INSERT INTO test.customer(customer_id,cust_name) VALUES(3001,"test"); SELECT*FROMtest.customer; END$$ 
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'CREATEORREPLACEPROCEDUREtestError() BEGIN DECLARE CONTINUE HANDLER FOR SQLEXCEPT' at line 1
+MariaDB [proo]> create or replace procedure testerror()
+    -> begin
+    -> declare continue handler for sqlexception select 'erroe occured';
+    -> insert into test.jobs(job_id,job_title) values (234,"test");
+    -> select * from test.jobs;
+    -> end$$
+Query OK, 0 rows affected (0.07 sec)
+
+MariaDB [proo]> call testerror()$$
++---------------+
+| erroe occured |
++---------------+
+| erroe occured |
++---------------+
+1 row in set (0.00 sec)
+
++---------------+
+| erroe occured |
++---------------+
+| erroe occured |
++---------------+
+1 row in set (0.02 sec)
+
+Query OK, 0 rows affected (0.02 sec)
+
+MariaDB [proo]> create or replace procedure test error
+    -> begin
+    -> declare exit handler for sqlexception select 'error occured';
+    -> insert into test.jobs(job_id,job_title) values(3001,"test");
+    -> select * from test.jobs;
+    -> end$$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'error
+begin
+declare exit handler for sqlexception select 'error occured';
+insert' at line 1
+MariaDB [proo]>  create or replace procedure testerror()
+    ->      begin
+    ->      declare exit handler for sqlexception select 'error occured';
+    ->      insert into test.jobs(job_id,job_title) values(3001,"test");
+    ->      select * from test.jobs;
+    ->      end$$
+Query OK, 0 rows affected (0.08 sec)
+
+MariaDB [proo]> call testerror()$$
++---------------+
+| error occured |
++---------------+
+| error occured |
++---------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.02 sec)
+
